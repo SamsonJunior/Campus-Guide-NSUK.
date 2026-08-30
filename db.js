@@ -1,7 +1,7 @@
 // Uses Node's built-in SQLite module (available in Node 22.5+) instead of a
 // native addon like better-sqlite3, so no C++ build tools are required to
 // install or run this project.
-const { DatabaseSync } = require('node:sqlite');
+const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
@@ -11,8 +11,9 @@ const bcrypt = require('bcryptjs');
 const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new DatabaseSync(path.join(dataDir, 'campusguard.db'));
-db.exec('PRAGMA journal_mode = WAL');
+ const db = new Database(path.join(dataDir, 'campusguard.db'));
+ 
+
 db.exec('PRAGMA foreign_keys = ON');
 
 db.exec(`
