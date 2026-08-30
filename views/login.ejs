@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Log in' }) %>
+<body>
+  <%- include('partials/topbar') %>
+  <section class="auth-split full-bleed">
+    <div class="auth-green">
+      <div class="green-watermark"><img src="/images/nsuk-logo.png" alt="" /></div>
+      <div class="brand__mark--lg"><img src="/images/nsuk-logo.png" alt="NSUK crest" /></div>
+      <h2>Welcome back to CampusGuard</h2>
+      <p class="lead">Log in to reach your emergency alert button and see your alert history.</p>
+    </div>
+    <div class="auth-white">
+      <div class="auth-white__inner">
+        <h1>Log in</h1>
+        <p class="subhead">Enter your student account details.</p>
+
+        <% if (error) { %>
+          <div class="alert-box"><%= error %></div>
+        <% } %>
+
+        <form action="/login" method="POST">
+          <input type="hidden" name="next" value="<%= next %>" />
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" value="<%= email %>" required autofocus />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        </form>
+        <div class="form-foot">New to CampusGuard? <a href="/register">Register</a></div>
+      </div>
+    </div>
+  </section>
+  <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'All alerts' }) %>
+<body class="console">
+  <%- include('partials/console-nav') %>
+  <div class="console__inner">
+    <h1>Emergency alert monitoring</h1>
+
+    <div class="filter-tabs">
+      <a class="filter-tab <%= !statusFilter ? 'active' : '' %>" href="/admin/alerts">All</a>
+      <a class="filter-tab <%= statusFilter === 'pending' ? 'active' : '' %>" href="/admin/alerts?status=pending">Pending</a>
+      <a class="filter-tab <%= statusFilter === 'acknowledged' ? 'active' : '' %>" href="/admin/alerts?status=acknowledged">Acknowledged</a>
+      <a class="filter-tab <%= statusFilter === 'resolved' ? 'active' : '' %>" href="/admin/alerts?status=resolved">Resolved</a>
+    </div>
+
+    <div class="console-panel">
+      <% if (alerts.length === 0) { %>
+        <p style="color:var(--console-text-soft)">No alerts match this filter.</p>
+      <% } else { %>
+        <div class="table-scroll">
+        <table class="console-table">
+          <thead>
+            <tr><th>Ref</th><th>Student</th><th>Phone</th><th>Type</th><th>Location</th><th>Time</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <% alerts.forEach(function(a) { %>
+              <tr>
+                <td class="mono"><a class="row-link" href="/admin/alerts/<%= a.id %>">#<%= String(a.id).padStart(5,'0') %></a></td>
+                <td><%= a.full_name %> <span class="mono" style="color:var(--console-text-soft)">(<%= a.matric_number %>)</span></td>
+                <td class="mono"><%= a.phone %></td>
+                <td><%= a.category %></td>
+                <td class="mono"><%= a.location_captured ? a.latitude.toFixed(4) + ', ' + a.longitude.toFixed(4) : 'Not captured' %></td>
+                <td class="mono"><%= a.created_at %></td>
+                <td><span class="badge badge--<%= a.status %>"><%= a.status %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

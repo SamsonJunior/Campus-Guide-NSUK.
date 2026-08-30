@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Register' }) %>
+<body>
+  <%- include('partials/topbar') %>
+  <section class="auth-split full-bleed">
+    <div class="auth-green">
+      <div class="green-watermark"><img src="/images/nsuk-logo.png" alt="" /></div>
+      <div class="brand__mark--lg"><img src="/images/nsuk-logo.png" alt="NSUK crest" /></div>
+      <h2>Join CampusGuard</h2>
+      <p class="lead">Create your student account so any alert you send is instantly identifiable to campus security.</p>
+    </div>
+    <div class="auth-white">
+      <div class="auth-white__inner">
+        <h1>Create your account</h1>
+        <p class="subhead">You'll need this to send an emergency alert.</p>
+
+        <% if (errors && errors.length) { %>
+          <div class="alert-box">
+            <strong>Please fix the following:</strong>
+            <ul><% errors.forEach(function(e) { %><li><%= e.msg %></li><% }) %></ul>
+          </div>
+        <% } %>
+
+        <form action="/register" method="POST" novalidate>
+          <div class="field">
+            <label for="full_name">Full name</label>
+            <input type="text" id="full_name" name="full_name" value="<%= values.full_name || '' %>" required />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="matric_number">Matric number</label>
+              <input type="text" id="matric_number" name="matric_number" value="<%= values.matric_number || '' %>" required />
+            </div>
+            <div class="field">
+              <label for="department">Department</label>
+              <input type="text" id="department" name="department" value="<%= values.department || '' %>" placeholder="e.g. Computer Science" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" value="<%= values.email || '' %>" required />
+            </div>
+            <div class="field">
+              <label for="phone">Phone number</label>
+              <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>" required />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required minlength="6" />
+            </div>
+            <div class="field">
+              <label for="confirm_password">Confirm password</label>
+              <input type="password" id="confirm_password" name="confirm_password" required minlength="6" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        </form>
+        <div class="form-foot">Already registered? <a href="/login">Log in</a></div>
+      </div>
+    </div>
+  </section>
+  <%- include('partials/footer') %>
+</body>
+</html>

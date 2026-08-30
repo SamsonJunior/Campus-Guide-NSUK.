@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Dashboard' }) %>
+<body>
+  <%- include('partials/topbar') %>
+  <div class="container">
+    <div class="dash-hero">
+      <div>
+        <h1>Hello, <%= student.full_name.split(' ')[0] %>.</h1>
+        <p><%= student.matric_number %> &middot; <%= student.department || 'Department not set' %></p>
+      </div>
+    </div>
+
+    <a href="/alert" class="big-alert-link">
+      <div class="ring">HOLD</div>
+      <h2>Send an emergency alert</h2>
+      <p>Your location is captured automatically the moment you activate it.</p>
+    </a>
+
+    <section class="section--line-top" style="padding-top: 8px;">
+      <div class="section-head" style="margin-bottom:18px;">
+        <div class="eyebrow">Your alert history</div>
+        <h2 style="font-size:1.25rem;">Recent activity</h2>
+      </div>
+
+      <% if (alerts.length === 0) { %>
+        <div class="empty-state">You haven't sent any alerts yet. That's a good thing.</div>
+      <% } else { %>
+        <ul class="history-list">
+          <% alerts.forEach(function(a) { %>
+            <li class="history-row">
+              <div>
+                <div class="cat"><%= a.category.charAt(0).toUpperCase() + a.category.slice(1) %></div>
+                <div class="meta mono"><%= a.created_at %> UTC &middot; #<%= String(a.id).padStart(5, '0') %></div>
+              </div>
+              <span class="status-pill status-pill--<%= a.status %>"><%= a.status %></span>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+  </div>
+  <%- include('partials/footer') %>
+</body>
+</html>

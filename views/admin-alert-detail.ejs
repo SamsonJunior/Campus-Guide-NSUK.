@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Alert #' + alert.id }) %>
+<body class="console">
+  <%- include('partials/console-nav') %>
+  <div class="console__inner">
+    <p style="margin-bottom:4px;"><a href="/admin/alerts" style="color:var(--console-text-soft); text-decoration:none;">&larr; All alerts</a></p>
+    <h1>Alert #<%= String(alert.id).padStart(5,'0') %> <span class="badge badge--<%= alert.status %>" style="margin-left:10px;"><%= alert.status %></span></h1>
+
+    <div class="detail-grid" style="margin-top:24px;">
+      <div>
+        <div class="console-panel">
+          <h2>Student</h2>
+          <dl class="kv">
+            <dt>Name</dt><dd><%= alert.full_name %></dd>
+            <dt>Matric no.</dt><dd class="mono"><%= alert.matric_number %></dd>
+            <dt>Department</dt><dd><%= alert.department || '\u2014' %></dd>
+            <dt>Phone</dt><dd class="mono"><%= alert.phone %></dd>
+            <dt>Email</dt><dd class="mono"><%= alert.email %></dd>
+          </dl>
+        </div>
+
+        <div class="console-panel">
+          <h2>Emergency details</h2>
+          <dl class="kv">
+            <dt>Type</dt><dd><%= alert.category %></dd>
+            <dt>Reported</dt><dd class="mono"><%= alert.created_at %> UTC</dd>
+            <dt>Note</dt><dd><%= alert.note || '\u2014' %></dd>
+          </dl>
+
+          <form action="/admin/alerts/<%= alert.id %>/status" method="POST" class="status-form">
+            <button class="btn btn-console btn-sm" name="status" value="acknowledged" type="submit">Mark acknowledged</button>
+            <button class="btn btn-console btn-sm" name="status" value="resolved" type="submit">Mark resolved</button>
+            <button class="btn btn-console btn-sm" name="status" value="pending" type="submit">Reopen</button>
+          </form>
+        </div>
+
+        <div class="console-panel">
+          <h2>Timeline</h2>
+          <ul class="timeline">
+            <% events.forEach(function(e) { %>
+              <li><span class="t"><%= e.created_at %></span><br /><%= e.action %> &mdash; <%= e.actor %></li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+
+      <div class="console-panel">
+        <h2>Location</h2>
+        <% if (alert.location_captured) { %>
+          <dl class="kv">
+            <dt>Coordinates</dt><dd class="mono"><%= alert.latitude.toFixed(6) %>, <%= alert.longitude.toFixed(6) %></dd>
+            <dt>Accuracy</dt><dd class="mono">&plusmn;<%= Math.round(alert.accuracy || 0) %> m</dd>
+          </dl>
+          <div class="map-embed">
+            <iframe
+              src="https://www.openstreetmap.org/export/embed.html?bbox=<%= alert.longitude - 0.004 %>%2C<%= alert.latitude - 0.003 %>%2C<%= alert.longitude + 0.004 %>%2C<%= alert.latitude + 0.003 %>&layer=mapnik&marker=<%= alert.latitude %>%2C<%= alert.longitude %>"
+              loading="lazy" title="Emergency location map"></iframe>
+          </div>
+          <p style="margin-top:10px;"><a href="https://www.openstreetmap.org/?mlat=<%= alert.latitude %>&mlon=<%= alert.longitude %>#map=18/<%= alert.latitude %>/<%= alert.longitude %>" target="_blank" rel="noopener" style="color:var(--console-text-soft); font-size:0.85rem;">Open full map &rarr;</a></p>
+        <% } else { %>
+          <p style="color:var(--console-text-soft)">Location was not available for this alert. Rely on the note and contact the student directly at <span class="mono"><%= alert.phone %></span>.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Security desk login' }) %>
+<body class="console">
+  <div class="console-topbar">
+    <a href="/" class="brand"><span class="brand__mark"><img src="/images/nsuk-logo.png" alt="NSUK crest" /></span> CampusGuard &middot; Security Desk</a>
+    <div class="nav-links"><a class="btn btn-ghost btn-sm" href="/">Back to site</a></div>
+  </div>
+  <section class="auth-split full-bleed">
+    <div class="auth-green">
+      <div class="green-watermark"><img src="/images/nsuk-logo.png" alt="" /></div>
+      <div class="brand__mark--lg"><img src="/images/nsuk-logo.png" alt="NSUK crest" /></div>
+      <h2>Campus Security Desk</h2>
+      <p class="lead">Restricted to authorized campus security personnel only.</p>
+    </div>
+    <div class="auth-white">
+      <div class="auth-white__inner">
+        <h1>Security desk login</h1>
+        <p class="subhead">Enter your security desk credentials.</p>
+
+        <% if (error) { %>
+          <div class="alert-box"><%= error %></div>
+        <% } %>
+
+        <form action="/admin/login" method="POST">
+          <input type="hidden" name="next" value="<%= next %>" />
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" value="<%= email %>" required autofocus />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

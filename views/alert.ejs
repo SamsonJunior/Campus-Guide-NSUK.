@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Send emergency alert' }) %>
+<body>
+  <%- include('partials/topbar') %>
+  <div class="container">
+    <div class="alert-page">
+      <h1>What's happening?</h1>
+      <p class="subhead">Choose the closest match. You can add detail once you're safe getting your location to security comes first.</p>
+
+      <form id="alert-form" action="/alert" method="POST">
+        <div class="category-grid" role="radiogroup" aria-label="Emergency type">
+          <% categories.forEach(function(c, i) { %>
+            <div class="category-option">
+              <input type="radio" id="cat-<%= c.value %>" name="category" value="<%= c.value %>" <%= i === 0 ? 'checked' : '' %> />
+              <label for="cat-<%= c.value %>"><%= c.label %></label>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="field" style="margin-top:16px;">
+          <label for="note">Optional detail (you can skip this)</label>
+          <textarea id="note" name="note" rows="2" maxlength="500" placeholder="e.g. Near the east hostel gate"></textarea>
+        </div>
+
+        <div class="location-status" id="location-status" data-state="pending">
+          <span class="spinner"></span>
+          <span id="location-status-text">Requesting your device location&hellip;</span>
+        </div>
+
+        <input type="hidden" name="latitude" id="latitude" />
+        <input type="hidden" name="longitude" id="longitude" />
+        <input type="hidden" name="accuracy" id="accuracy" />
+        <input type="hidden" name="location_captured" id="location_captured" value="0" />
+
+        <button type="button" id="hold-btn" class="hold-btn">
+          <span class="hold-btn__fill" id="hold-fill"></span>
+          <span id="hold-label">Press and hold to send alert</span>
+        </button>
+        <p class="hold-hint">Holding for two seconds prevents an accidental alert. Lift early to cancel.</p>
+      </form>
+    </div>
+  </div>
+  <%- include('partials/footer') %>
+  <script src="/js/alert.js"></script>
+</body>
+</html>

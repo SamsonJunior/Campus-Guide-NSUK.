@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Security dashboard' }) %>
+<body class="console">
+  <%- include('partials/console-nav') %>
+  <div class="console__inner">
+    <h1>Monitoring desk</h1>
+    <p style="color:var(--console-text-soft)">Signed in as <%= admin.full_name %> &middot; <%= admin.role %></p>
+
+    <div class="stat-grid">
+      <div class="stat-card stat-card--alert">
+        <div class="num"><%= counts.pending || 0 %></div>
+        <div class="label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="num"><%= counts.acknowledged || 0 %></div>
+        <div class="label">Acknowledged</div>
+      </div>
+      <div class="stat-card">
+        <div class="num"><%= counts.resolved || 0 %></div>
+        <div class="label">Resolved</div>
+      </div>
+      <div class="stat-card">
+        <div class="num"><%= counts.total || 0 %></div>
+        <div class="label">Total logged</div>
+      </div>
+    </div>
+
+    <div class="console-panel">
+      <h2>Latest alerts</h2>
+      <% if (recent.length === 0) { %>
+        <p style="color:var(--console-text-soft)">No alerts have been logged yet.</p>
+      <% } else { %>
+        <div class="table-scroll">
+        <table class="console-table">
+          <thead>
+            <tr><th>Ref</th><th>Student</th><th>Type</th><th>Time</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <% recent.forEach(function(a) { %>
+              <tr>
+                <td class="mono"><a class="row-link" href="/admin/alerts/<%= a.id %>">#<%= String(a.id).padStart(5,'0') %></a></td>
+                <td><%= a.full_name %> <span class="mono" style="color:var(--console-text-soft)">(<%= a.matric_number %>)</span></td>
+                <td><%= a.category %></td>
+                <td class="mono"><%= a.created_at %></td>
+                <td><span class="badge badge--<%= a.status %>"><%= a.status %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        </div>
+      <% } %>
+      <div style="margin-top:16px;"><a class="btn btn-console btn-sm" href="/admin/alerts">View all alerts &rarr;</a></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Emergency alerts with your exact location' }) %>
+<body>
+  <%- include('partials/topbar') %>
+
+  <section class="hero-split full-bleed">
+    <div class="hero-green">
+      <div class="green-watermark"><img src="/images/nsuk-logo.png" alt="" /></div>
+      <div class="hero__eyebrow">NSUK &middot; Campus Safety</div>
+      <h1>One button. Your exact location. Help on the way.</h1>
+      <p class="lead">CampusGuard replaces the scramble of phone calls and vague directions with a single alert that reaches campus security together with where you actually are.</p>
+      <div class="hero-pills">
+        <div class="hero-pill">Real-time GPS capture</div>
+        <div class="hero-pill">24/7 campus monitoring</div>
+        <div class="hero-pill">Full incident trail</div>
+      </div>
+    </div>
+    <div class="hero-white">
+      <div class="dispatch-band">
+        <div class="dispatch-band__head"><span class="dot"></span> LIVE DISPATCH STATUS</div>
+        <div class="dispatch-band__row"><span class="dispatch-band__label">SYSTEM</span><span>OPERATIONAL</span></div>
+        <div class="dispatch-band__row"><span class="dispatch-band__label">LOCATION SERVICE</span><span>GPS + NETWORK</span></div>
+        <div class="dispatch-band__row"><span class="dispatch-band__label">MONITORING DESK</span><span>24/7 CAMPUS SECURITY</span></div>
+        <div class="dispatch-band__row"><span class="dispatch-band__label">ALERTS LOGGED</span><span><%= totalAlerts %></span></div>
+      </div>
+      <div class="hero-cta">
+        <a href="/register" class="btn btn-primary">Register as a student</a>
+        <a href="/login" class="btn btn-ghost">I already have an account</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <section class="section section--line-top">
+      <div class="section-head">
+        <div class="eyebrow">How it works</div>
+        <h2>From distress to dispatch in four steps</h2>
+      </div>
+      <div class="steps">
+        <div class="step-card">
+          <div class="step-card__num">01</div>
+          <h3>Register once</h3>
+          <p>Create a student profile with your matric number and phone, so any alert you send is instantly identifiable.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-card__num">02</div>
+          <h3>Hold to alert</h3>
+          <p>When something happens, open the app and hold the alert button a deliberate action that prevents accidental triggers.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-card__num">03</div>
+          <h3>Location attached</h3>
+          <p>Your device's GPS position is captured automatically and attached to the report, no typing required.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-card__num">04</div>
+          <h3>Security responds</h3>
+          <p>Campus security sees the alert on their monitoring desk with your location on the map and can dispatch help.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--line-top">
+      <div class="section-head">
+        <div class="eyebrow">Built for real emergencies</div>
+        <h2>Every part of the system exists to save time</h2>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Real-time GPS capture</h3>
+          <p>No need to describe which hostel block or lecture hall you're near coordinates are captured the moment you alert.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Centralized monitoring</h3>
+          <p>Security personnel work from one dashboard instead of juggling phone calls, walk-ins, and hearsay.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Full incident trail</h3>
+          <p>Every alert keeps a timestamped record from creation to acknowledgement to resolution.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

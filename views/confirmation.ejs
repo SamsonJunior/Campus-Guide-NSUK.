@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Alert sent' }) %>
+<body>
+  <%- include('partials/topbar') %>
+  <div class="container">
+    <div class="confirm-card">
+      <div class="confirm-mark">&#10003;</div>
+      <h1>Your alert has been sent</h1>
+      <p>Campus security has been notified<% if (alert.location_captured) { %> along with your location<% } %>. Stay where you are if it's safe to do so.</p>
+      <div class="confirm-id mono">
+        Alert reference #<%= String(alert.id).padStart(5, '0') %><br />
+        Status: <%= alert.status %><br />
+        <% if (alert.location_captured) { %>Location: <%= alert.latitude.toFixed(5) %>, <%= alert.longitude.toFixed(5) %><% } else { %>Location: not captured &mdash; described in your note<% } %>
+      </div>
+      <a href="/dashboard" class="btn btn-primary">Back to dashboard</a>
+    </div>
+  </div>
+  <%- include('partials/footer') %>
+</body>
+</html>
