@@ -1,6 +1,6 @@
 # CampusGuard — Location-Based Emergency System for Students
 
-A working implementation of the system described as a Location Based Emergency System for Students\* (Comfort Leo, FT22BCMP0767, NSUK).
+A working implementation of the system described in _Design and Implementation of Location Based Emergency System for Students_ (Comfort Leo, FT22BCMP0767, NSUK).
 
 ## What it does
 

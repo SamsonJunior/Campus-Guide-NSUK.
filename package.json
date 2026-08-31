@@ -3,19 +3,16 @@
   "version": "1.0.0",
   "description": "Location-Based Emergency System for Students",
   "main": "server.js",
-  "engines": {
-    "node": ">=22.5.0"
-  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^13.0.3",
     "ejs": "^3.1.10",
     "express": "^4.21.0",
     "express-session": "^1.18.0",
-    "express-validator": "^7.2.0"
+    "express-validator": "^7.2.0",
+    "sql.js": "^1.11.0"
   }
 }
