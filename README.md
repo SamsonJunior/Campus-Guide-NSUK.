@@ -1,6 +1,6 @@
 # CampusGuard — Location-Based Emergency System for Students
 
-A working implementation of the system described in _Design and Implementation of Location Based Emergency System for Students_ (Comfort Leo, FT22BCMP0767, NSUK).
+A working implementation of the system described in *Design and Implementation of Location Based Emergency System for Students* (Comfort Leo, FT22BCMP0767, NSUK).
 
 ## What it does
 
@@ -35,7 +35,7 @@ A default security account is created automatically the first time the server st
 
 ```
 email:    security@nsuk.edu.ng
-password: 12345678
+password: Security#2026
 ```
 
 Change this password (or edit the seed in `db.js`) before using the system for anything real.

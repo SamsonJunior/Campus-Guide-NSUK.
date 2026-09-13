@@ -14,7 +14,7 @@
           <dl class="kv">
             <dt>Name</dt><dd><%= alert.full_name %></dd>
             <dt>Matric no.</dt><dd class="mono"><%= alert.matric_number %></dd>
-            <dt>Department</dt><dd><%= alert.department || '\u2014' %></dd>
+            <dt>Department</dt><dd><%= alert.department || 'Not provided' %></dd>
             <dt>Phone</dt><dd class="mono"><%= alert.phone %></dd>
             <dt>Email</dt><dd class="mono"><%= alert.email %></dd>
           </dl>
@@ -25,7 +25,7 @@
           <dl class="kv">
             <dt>Type</dt><dd><%= alert.category %></dd>
             <dt>Reported</dt><dd class="mono"><%= alert.created_at %> UTC</dd>
-            <dt>Note</dt><dd><%= alert.note || '\u2014' %></dd>
+            <dt>Note</dt><dd><%= alert.note || 'No note added' %></dd>
           </dl>
 
           <form action="/admin/alerts/<%= alert.id %>/status" method="POST" class="status-form">
@@ -39,7 +39,7 @@
           <h2>Timeline</h2>
           <ul class="timeline">
             <% events.forEach(function(e) { %>
-              <li><span class="t"><%= e.created_at %></span><br /><%= e.action %> &mdash; <%= e.actor %></li>
+              <li><span class="t"><%= e.created_at %></span><br /><%= e.action %> (<%= e.actor %>)</li>
             <% }) %>
           </ul>
         </div>

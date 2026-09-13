@@ -11,7 +11,7 @@
       <div class="confirm-id mono">
         Alert reference #<%= String(alert.id).padStart(5, '0') %><br />
         Status: <%= alert.status %><br />
-        <% if (alert.location_captured) { %>Location: <%= alert.latitude.toFixed(5) %>, <%= alert.longitude.toFixed(5) %><% } else { %>Location: not captured &mdash; described in your note<% } %>
+        <% if (alert.location_captured) { %>Location: <%= alert.latitude.toFixed(5) %>, <%= alert.longitude.toFixed(5) %><% } else { %>Location: not captured. Described in your note.<% } %>
       </div>
       <a href="/dashboard" class="btn btn-primary">Back to dashboard</a>
     </div>
