@@ -10,7 +10,7 @@
   // settles well under this within a few seconds.
   const GOOD_ACCURACY_M = 30;
   // How long to keep refining before accepting whatever we have.
-  const MAX_WATCH_MS = 12000;
+  const MAX_WATCH_MS = 25000;
   // Above this, the fix is almost certainly Wi-Fi/IP based rather than GPS
   // (common on desktops and laptops, which have no GPS chip at all).
   const COARSE_THRESHOLD_M = 1000;
@@ -65,7 +65,7 @@
       setStatus(
         'coarse',
         'Best available location captured (accuracy \u00B1' + acc + 'm). ' +
-        'This device may not have GPS \u2014 try this on a phone for an exact location, ' +
+        'This device may not have GPS. Try this on a phone for an exact location, ' +
         'or add a landmark in the note above. ' +
         '<button type="button" id="retry-location" class="link-btn">Try again</button>'
       );
@@ -96,7 +96,7 @@
       },
       function () {
         if (!bestPos) {
-          setStatus('error', 'Location unavailable. Your alert will still be sent \u2014 add detail above so security can find you.');
+          setStatus('error', 'Location unavailable. Your alert will still be sent. Add detail above so security can find you.');
         }
         finish();
       },
