@@ -75,6 +75,8 @@ img { max-width: 100%; }
 .btn-ghost:hover { border-color: var(--green); color: var(--green-dark); }
 .btn-console { background: transparent; color: var(--slate); border-color: var(--line); }
 .btn-console:hover { border-color: var(--green); color: var(--green-dark); }
+.btn-danger { background: transparent; color: var(--danger-dark); border-color: rgba(215, 38, 61, 0.35); }
+.btn-danger:hover { background: rgba(215, 38, 61, 0.08); border-color: var(--danger); }
 .btn-block { width: 100%; }
 .btn-sm { padding: 8px 14px; font-size: 0.82rem; }
 

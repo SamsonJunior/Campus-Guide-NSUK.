@@ -33,6 +33,11 @@
             <button class="btn btn-console btn-sm" name="status" value="resolved" type="submit">Mark resolved</button>
             <button class="btn btn-console btn-sm" name="status" value="pending" type="submit">Reopen</button>
           </form>
+
+          <form action="/admin/alerts/<%= alert.id %>/delete" method="POST" class="status-form" style="margin-top:10px;"
+                onsubmit="return confirm('Delete alert #<%= String(alert.id).padStart(5,'0') %> permanently? This cannot be undone.');">
+            <button class="btn btn-console btn-sm btn-danger" type="submit">Delete alert</button>
+          </form>
         </div>
 
         <div class="console-panel">

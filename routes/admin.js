@@ -114,4 +114,14 @@ router.post('/alerts/:id/status', requireAdmin, (req, res) => {
   res.redirect(`/admin/alerts/${alert.id}`);
 });
 
+router.post('/alerts/:id/delete', requireAdmin, (req, res) => {
+  const alert = db.prepare('SELECT * FROM alerts WHERE id = ?').get(req.params.id);
+  if (!alert) return res.redirect('/admin/alerts');
+
+  db.prepare('DELETE FROM alert_events WHERE alert_id = ?').run(alert.id);
+  db.prepare('DELETE FROM alerts WHERE id = ?').run(alert.id);
+
+  res.redirect('/admin/alerts');
+});
+
 module.exports = router;
