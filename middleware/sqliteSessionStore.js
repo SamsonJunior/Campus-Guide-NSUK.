@@ -1,13 +1,9 @@
 const session = require('express-session');
 const db = require('../db');
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS sessions (
-  sid TEXT PRIMARY KEY,
-  data TEXT NOT NULL,
-  expires_at INTEGER NOT NULL
-);
-`);
+// The sessions table itself is created in db.js's shared schema, since it
+// now runs as part of the single async initialize() step (Turso is remote,
+// so table creation can't happen synchronously at module-load time here).
 
 const getStmt = db.prepare('SELECT data, expires_at FROM sessions WHERE sid = ?');
 const upsertStmt = db.prepare(
@@ -18,9 +14,9 @@ const deleteStmt = db.prepare('DELETE FROM sessions WHERE sid = ?');
 const pruneStmt = db.prepare('DELETE FROM sessions WHERE expires_at < ?');
 
 class SqliteSessionStore extends session.Store {
-  get(sid, callback) {
+  async get(sid, callback) {
     try {
-      const row = getStmt.get(sid);
+      const row = await getStmt.get(sid);
       if (!row || row.expires_at < Date.now()) return callback(null, null);
       callback(null, JSON.parse(row.data));
     } catch (err) {
@@ -28,19 +24,19 @@ class SqliteSessionStore extends session.Store {
     }
   }
 
-  set(sid, sessionData, callback) {
+  async set(sid, sessionData, callback) {
     try {
       const maxAge = sessionData.cookie && sessionData.cookie.maxAge ? sessionData.cookie.maxAge : 1000 * 60 * 60 * 8;
-      upsertStmt.run(sid, JSON.stringify(sessionData), Date.now() + maxAge);
+      await upsertStmt.run(sid, JSON.stringify(sessionData), Date.now() + maxAge);
       callback && callback(null);
     } catch (err) {
       callback && callback(err);
     }
   }
 
-  destroy(sid, callback) {
+  async destroy(sid, callback) {
     try {
-      deleteStmt.run(sid);
+      await deleteStmt.run(sid);
       callback && callback(null);
     } catch (err) {
       callback && callback(err);
@@ -53,6 +49,6 @@ class SqliteSessionStore extends session.Store {
 }
 
 // Clear out expired sessions once on startup so the table doesn't grow forever.
-pruneStmt.run(Date.now());
+pruneStmt.run(Date.now()).catch((err) => console.error('Failed to prune sessions:', err));
 
 module.exports = SqliteSessionStore;

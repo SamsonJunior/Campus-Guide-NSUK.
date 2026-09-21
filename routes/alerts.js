@@ -13,55 +13,71 @@ const CATEGORIES = [
   { value: 'general', label: 'Other emergency' },
 ];
 
-router.get('/dashboard', requireStudent, (req, res) => {
-  const student = db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
-  const alerts = db
-    .prepare('SELECT * FROM alerts WHERE student_id = ? ORDER BY created_at DESC LIMIT 10')
-    .all(student.id);
-  res.render('dashboard', { student, alerts });
+router.get('/dashboard', requireStudent, async (req, res, next) => {
+  try {
+    const student = await db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
+    const alerts = await db
+      .prepare('SELECT * FROM alerts WHERE student_id = ? ORDER BY created_at DESC LIMIT 10')
+      .all(student.id);
+    res.render('dashboard', { student, alerts });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/alert', requireStudent, (req, res) => {
-  const student = db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
-  res.render('alert', { student, categories: CATEGORIES, error: null });
+router.get('/alert', requireStudent, async (req, res, next) => {
+  try {
+    const student = await db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
+    res.render('alert', { student, categories: CATEGORIES, error: null });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/alert', requireStudent, (req, res) => {
-  const student = db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
-  const { category, note, latitude, longitude, accuracy, location_captured } = req.body;
+router.post('/alert', requireStudent, async (req, res, next) => {
+  try {
+    const student = await db.prepare('SELECT * FROM students WHERE id = ?').get(req.session.studentId);
+    const { category, note, latitude, longitude, accuracy, location_captured } = req.body;
 
-  const cat = CATEGORIES.some((c) => c.value === category) ? category : 'general';
+    const cat = CATEGORIES.some((c) => c.value === category) ? category : 'general';
 
-  const info = db
-    .prepare(
-      `INSERT INTO alerts (student_id, category, note, latitude, longitude, accuracy, location_captured)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(
-      student.id,
-      cat,
-      (note || '').trim().slice(0, 500),
-      latitude ? Number(latitude) : null,
-      longitude ? Number(longitude) : null,
-      accuracy ? Number(accuracy) : null,
-      location_captured === '1' ? 1 : 0
+    const info = await db
+      .prepare(
+        `INSERT INTO alerts (student_id, category, note, latitude, longitude, accuracy, location_captured)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        student.id,
+        cat,
+        (note || '').trim().slice(0, 500),
+        latitude ? Number(latitude) : null,
+        longitude ? Number(longitude) : null,
+        accuracy ? Number(accuracy) : null,
+        location_captured === '1' ? 1 : 0
+      );
+
+    await db.prepare(`INSERT INTO alert_events (alert_id, actor, action) VALUES (?, ?, ?)`).run(
+      info.lastInsertRowid,
+      `student:${student.id}`,
+      'Alert created'
     );
 
-  db.prepare(`INSERT INTO alert_events (alert_id, actor, action) VALUES (?, ?, ?)`).run(
-    info.lastInsertRowid,
-    `student:${student.id}`,
-    'Alert created'
-  );
-
-  res.redirect(`/alert/${info.lastInsertRowid}/confirmation`);
+    res.redirect(`/alert/${info.lastInsertRowid}/confirmation`);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/alert/:id/confirmation', requireStudent, (req, res) => {
-  const alert = db
-    .prepare('SELECT * FROM alerts WHERE id = ? AND student_id = ?')
-    .get(req.params.id, req.session.studentId);
-  if (!alert) return res.redirect('/dashboard');
-  res.render('confirmation', { alert });
+router.get('/alert/:id/confirmation', requireStudent, async (req, res, next) => {
+  try {
+    const alert = await db
+      .prepare('SELECT * FROM alerts WHERE id = ? AND student_id = ?')
+      .get(req.params.id, req.session.studentId);
+    if (!alert) return res.redirect('/dashboard');
+    res.render('confirmation', { alert });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

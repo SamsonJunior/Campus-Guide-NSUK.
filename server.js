@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
@@ -40,9 +41,13 @@ db.initialize().then(() => {
     next();
   });
 
-  app.get('/', (req, res) => {
-    const totals = db.prepare('SELECT COUNT(*) AS c FROM alerts').get();
-    res.render('landing', { totalAlerts: totals.c });
+  app.get('/', async (req, res, next) => {
+    try {
+      const totals = await db.prepare('SELECT COUNT(*) AS c FROM alerts').get();
+      res.render('landing', { totalAlerts: totals.c });
+    } catch (err) {
+      next(err);
+    }
   });
 
   app.use('/', authRoutes);

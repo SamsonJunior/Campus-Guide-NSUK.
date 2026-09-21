@@ -1,74 +1,54 @@
-// Uses sql.js — a pure WebAssembly build of SQLite with no native/compiled
-// code and no dependency on any particular Node.js version. This avoids two
-// separate classes of hosting failures: "no such built-in module: node:sqlite"
-// on hosts running an older Node version, and native-binary crashes from
-// packages like better-sqlite3 when their prebuilt binary doesn't match the
-// host's exact platform/architecture.
-const path = require('path');
-const fs = require('fs');
+// Uses Turso (libSQL) — a cloud-hosted SQLite database — instead of a local
+// file. This is what makes student accounts and alerts survive server
+// restarts and redeploys: Render's free-tier disk is wiped on every restart,
+// but the Turso database lives outside that container entirely.
 const bcrypt = require('bcryptjs');
-const initSqlJs = require('sql.js');
+const { createClient } = require('@libsql/client');
 
-// DATA_DIR lets a host point this at a persistent disk (e.g. Render's mounted
-// volume). Falls back to the local ./data folder for development.
-const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
-fs.mkdirSync(dataDir, { recursive: true });
-const dbFile = path.join(dataDir, 'campusguard.db');
+const url = process.env.TURSO_DATABASE_URL;
+const authToken = process.env.TURSO_AUTH_TOKEN;
+
+if (!url || !authToken) {
+  throw new Error(
+    'Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variables. ' +
+    'Set them (e.g. in Render\u2019s Environment tab) before starting the server.'
+  );
+}
+
+const client = createClient({ url, authToken });
 
 // This object is exported immediately (synchronously), then populated with
 // working methods once initialize() finishes. Route files that do
 // `require('../db')` receive this same object reference, so once it's
 // populated (before the server starts accepting requests) every route sees
-// the working methods automatically.
+// the working methods automatically. Every method is now async, since Turso
+// is a remote database reached over the network.
 const api = { ready: false };
 
-function buildDatabase(SQL) {
-  const existing = fs.existsSync(dbFile) ? fs.readFileSync(dbFile) : null;
-  const sqlDb = existing ? new SQL.Database(existing) : new SQL.Database();
+api.exec = async (sql) => {
+  await client.executeMultiple(sql);
+};
 
-  function persist() {
-    fs.writeFileSync(dbFile, Buffer.from(sqlDb.export()));
-  }
+api.prepare = (sql) => ({
+  async run(...params) {
+    const result = await client.execute({ sql, args: params });
+    return {
+      changes: result.rowsAffected,
+      lastInsertRowid: result.lastInsertRowid !== undefined ? Number(result.lastInsertRowid) : undefined,
+    };
+  },
+  async get(...params) {
+    const result = await client.execute({ sql, args: params });
+    return result.rows[0];
+  },
+  async all(...params) {
+    const result = await client.execute({ sql, args: params });
+    return result.rows;
+  },
+});
 
-  api.exec = (sql) => {
-    sqlDb.run(sql);
-    persist();
-  };
-
-  api.prepare = (sql) => ({
-    run(...params) {
-      const stmt = sqlDb.prepare(sql);
-      stmt.bind(params);
-      stmt.step();
-      stmt.free();
-      const changes = sqlDb.getRowsModified();
-      let lastInsertRowid;
-      const idRes = sqlDb.exec('SELECT last_insert_rowid() AS id');
-      if (idRes[0]) lastInsertRowid = idRes[0].values[0][0];
-      persist();
-      return { changes, lastInsertRowid };
-    },
-    get(...params) {
-      const stmt = sqlDb.prepare(sql);
-      stmt.bind(params);
-      const hasRow = stmt.step();
-      const row = hasRow ? stmt.getAsObject() : undefined;
-      stmt.free();
-      return row;
-    },
-    all(...params) {
-      const stmt = sqlDb.prepare(sql);
-      stmt.bind(params);
-      const rows = [];
-      while (stmt.step()) rows.push(stmt.getAsObject());
-      stmt.free();
-      return rows;
-    },
-  });
-}
-
-function runSchemaAndSeed() {
-  api.exec(`
+async function runSchemaAndSeed() {
+  await api.exec(`
     CREATE TABLE IF NOT EXISTS students (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       full_name TEXT NOT NULL,
@@ -112,12 +92,18 @@ function runSchemaAndSeed() {
       action TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      expires_at INTEGER NOT NULL
+    );
   `);
 
-  const adminCount = api.prepare('SELECT COUNT(*) AS c FROM admins').get().c;
+  const adminCount = (await api.prepare('SELECT COUNT(*) AS c FROM admins').get()).c;
   if (adminCount === 0) {
     const hash = bcrypt.hashSync('Security#2026', 10);
-    api.prepare(
+    await api.prepare(
       `INSERT INTO admins (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)`
     ).run('Campus Security Desk', 'security@nsuk.edu.ng', hash, 'security');
     console.log('Seeded default admin -> security@nsuk.edu.ng / Security#2026');
@@ -126,10 +112,7 @@ function runSchemaAndSeed() {
 
 async function initialize() {
   if (api.ready) return api;
-  const wasmBinary = fs.readFileSync(require.resolve('sql.js/dist/sql-wasm.wasm'));
-  const SQL = await initSqlJs({ wasmBinary });
-  buildDatabase(SQL);
-  runSchemaAndSeed();
+  await runSchemaAndSeed();
   api.ready = true;
   return api;
 }
