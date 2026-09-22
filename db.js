@@ -5,8 +5,8 @@
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@libsql/client');
 
-const url = process.env.TURSO_DATABASE_URL;
-const authToken = process.env.TURSO_AUTH_TOKEN;
+const url = (process.env.TURSO_DATABASE_URL || '').trim();
+const authToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
 
 if (!url || !authToken) {
   throw new Error(
@@ -14,6 +14,12 @@ if (!url || !authToken) {
     'Set them (e.g. in Render\u2019s Environment tab) before starting the server.'
   );
 }
+
+// Helpful, non-sensitive startup diagnostics: prints the URL in full (it's
+// not a secret) and only the length of the token (never the token itself),
+// so a bad copy/paste shows up immediately in Render's logs instead of a
+// cryptic parser error.
+console.log(`Connecting to Turso database: ${url} (auth token length: ${authToken.length})`);
 
 const client = createClient({ url, authToken });
 
