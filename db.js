@@ -104,6 +104,13 @@ async function runSchemaAndSeed() {
       data TEXT NOT NULL,
       expires_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS password_resets (
+      token TEXT PRIMARY KEY,
+      student_id INTEGER NOT NULL REFERENCES students(id),
+      expires_at INTEGER NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0
+    );
   `);
 
   const adminCount = (await api.prepare('SELECT COUNT(*) AS c FROM admins').get()).c;

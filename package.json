@@ -15,6 +15,7 @@
     "express": "^4.21.0",
     "express-session": "^1.18.0",
     "express-validator": "^7.2.0",
+    "nodemailer": "^10.0.10",
     "sql.js": "^1.11.0"
   }
 }

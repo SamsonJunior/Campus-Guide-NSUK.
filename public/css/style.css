@@ -245,6 +245,10 @@ img { max-width: 100%; }
   padding: 12px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 18px;
 }
 .alert-box ul { margin: 4px 0 0; padding-left: 18px; }
+.success-box {
+  background: var(--green-soft); border: 1px solid rgba(31, 122, 77, 0.3); color: var(--green-dark);
+  padding: 12px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 18px;
+}
 
 /* ===== Dashboard ===== */
 .dash-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; padding: 32px 0 8px; }
