@@ -1,12 +1,15 @@
 const express = require('express');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const { body, validationResult } = require('express-validator');
 const db = require('../db');
 const { requireAdmin, redirectIfAdmin } = require('../middleware/auth');
+const { sendPasswordResetEmail } = require('../lib/mailer');
 
 const router = express.Router();
 
 router.get('/login', redirectIfAdmin, (req, res) => {
-  res.render('admin-login', { error: null, email: '', next: req.query.next || '' });
+  res.render('admin-login', { error: null, email: '', next: req.query.next || '', resetSuccess: false });
 });
 
 router.post('/login', redirectIfAdmin, async (req, res, next) => {
@@ -15,7 +18,7 @@ router.post('/login', redirectIfAdmin, async (req, res, next) => {
     const admin = await db.prepare('SELECT * FROM admins WHERE email = ?').get((email || '').trim().toLowerCase());
 
     if (!admin || !bcrypt.compareSync(password || '', admin.password_hash)) {
-      return res.status(401).render('admin-login', { error: 'Incorrect email or password.', email, next: nextUrl || '' });
+      return res.status(401).render('admin-login', { error: 'Incorrect email or password.', email, next: nextUrl || '', resetSuccess: false });
     }
 
     req.session.adminId = admin.id;
@@ -29,6 +32,101 @@ router.post('/logout', (req, res) => {
   req.session.adminId = null;
   res.redirect('/admin/login');
 });
+
+router.get('/forgot-password', redirectIfAdmin, (req, res) => {
+  res.render('admin-forgot-password', { error: null, sent: false, email: '' });
+});
+
+router.post('/forgot-password', redirectIfAdmin, async (req, res, next) => {
+  try {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const admin = await db.prepare('SELECT * FROM admins WHERE email = ?').get(email);
+
+    // Same "always say sent" approach as the student flow, so this form
+    // can't be used to check which emails have admin accounts.
+    if (admin) {
+      const token = crypto.randomBytes(32).toString('hex');
+      const oneHour = 1000 * 60 * 60;
+      await db
+        .prepare('INSERT INTO admin_password_resets (token, admin_id, expires_at) VALUES (?, ?, ?)')
+        .run(token, admin.id, Date.now() + oneHour);
+
+      const resetUrl = `${req.protocol}://${req.get('host')}/admin/reset-password/${token}`;
+      try {
+        await sendPasswordResetEmail(admin.email, resetUrl, { heading: 'CampusGuard Security Desk' });
+      } catch (mailErr) {
+        console.error('Failed to send admin password reset email:', mailErr);
+        return res.status(500).render('admin-forgot-password', {
+          error: 'We could not send the reset email right now. Please try again shortly.',
+          sent: false,
+          email,
+        });
+      }
+    }
+
+    res.render('admin-forgot-password', { error: null, sent: true, email });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/reset-password/:token', redirectIfAdmin, async (req, res, next) => {
+  try {
+    const reset = await db
+      .prepare('SELECT * FROM admin_password_resets WHERE token = ?')
+      .get(req.params.token);
+
+    if (!reset || reset.used || reset.expires_at < Date.now()) {
+      return res.status(400).render('admin-reset-password', {
+        error: 'This reset link is invalid or has expired. Please request a new one.',
+        token: null,
+      });
+    }
+
+    res.render('admin-reset-password', { error: null, token: req.params.token });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/reset-password/:token',
+  redirectIfAdmin,
+  [
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters.'),
+    body('confirm_password').custom((val, { req }) => val === req.body.password).withMessage('Passwords do not match.'),
+  ],
+  async (req, res, next) => {
+    try {
+      const reset = await db
+        .prepare('SELECT * FROM admin_password_resets WHERE token = ?')
+        .get(req.params.token);
+
+      if (!reset || reset.used || reset.expires_at < Date.now()) {
+        return res.status(400).render('admin-reset-password', {
+          error: 'This reset link is invalid or has expired. Please request a new one.',
+          token: null,
+        });
+      }
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).render('admin-reset-password', {
+          error: errors.array()[0].msg,
+          token: req.params.token,
+        });
+      }
+
+      const password_hash = bcrypt.hashSync(req.body.password, 10);
+      await db.prepare('UPDATE admins SET password_hash = ? WHERE id = ?').run(password_hash, reset.admin_id);
+      await db.prepare('UPDATE admin_password_resets SET used = 1 WHERE token = ?').run(req.params.token);
+
+      res.render('admin-login', { error: null, email: '', next: '', resetSuccess: true });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 router.get('/dashboard', requireAdmin, async (req, res, next) => {
   try {
