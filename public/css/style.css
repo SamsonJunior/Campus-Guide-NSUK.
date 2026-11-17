@@ -389,3 +389,28 @@ img { max-width: 100%; }
   .hold-btn { padding: 20px; font-size: 1rem; }
   .console-panel { padding: 16px; }
 }
+
+/* ===== Emergency contacts (student pages) ===== */
+.emergency-contacts { margin: 24px auto 0; max-width: 520px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper-tint); }
+.emergency-contacts h3 { margin: 0 0 4px; font-size: 1rem; }
+.emergency-contacts p { margin: 0 0 8px; font-size: 0.9rem; }
+.emergency-contacts ul { list-style: none; margin: 0; padding: 0; }
+.emergency-contacts li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.emergency-contacts a { font-weight: 600; text-decoration: none; }
+
+/* ===== Security desk alarm banner ===== */
+.alarm-banner { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 20px; background: #b3261e; color: #fff; animation: alarm-pulse 1s infinite alternate; }
+.alarm-banner[hidden], .alarm-enable[hidden] { display: none; }
+.alarm-banner__main { display: flex; flex-direction: column; }
+.alarm-banner__actions, .alarm-banner__calls { display: flex; gap: 8px; flex-wrap: wrap; }
+.alarm-banner__calls { width: 100%; }
+.alarm-enable { display: block; width: 100%; padding: 10px; border: 0; background: #f5a623; color: #1a1a1a; font-weight: 600; cursor: pointer; }
+@keyframes alarm-pulse { from { background: #b3261e; } to { background: #7a1510; } }
+
+/* ===== Admin locations + notices ===== */
+.loc-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.loc-form label { display: flex; flex-direction: column; font-size: 0.8rem; gap: 4px; color: var(--console-text-soft); }
+.loc-form input { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); min-width: 150px; font-family: var(--font-mono); }
+.notice { padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+.notice--ok { background: rgba(31,122,77,0.15); }
+.notice--err { background: rgba(179,38,30,0.18); }

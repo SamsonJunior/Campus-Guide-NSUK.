@@ -3,8 +3,28 @@
   <div class="nav-links">
     <a class="btn btn-console btn-sm" href="/admin/dashboard">Dashboard</a>
     <a class="btn btn-console btn-sm" href="/admin/alerts">All alerts</a>
+    <a class="btn btn-console btn-sm" href="/admin/locations">Locations</a>
     <form action="/admin/logout" method="POST" style="display:inline">
       <button class="btn btn-console btn-sm" type="submit">Log out</button>
     </form>
   </div>
 </div>
+
+<!-- Live alarm: shown by /js/alarm.js while any alert is still pending -->
+<div id="alarm-banner" class="alarm-banner" hidden role="alert">
+  <div class="alarm-banner__main">
+    <strong id="alarm-title"></strong>
+    <span id="alarm-detail"></span>
+  </div>
+  <div class="alarm-banner__actions">
+    <a id="alarm-open" class="btn btn-sm btn-danger" href="/admin/alerts?status=pending">Open alerts</a>
+    <button type="button" id="alarm-mute" class="btn btn-console btn-sm">Silence</button>
+  </div>
+  <div class="alarm-banner__calls">
+    <% contacts.forEach(function(c) { %>
+      <a class="btn btn-console btn-sm" href="tel:<%= c.phone %>">Call <%= c.name %> &middot; <%= c.phone %></a>
+    <% }) %>
+  </div>
+</div>
+<button type="button" id="alarm-enable" class="alarm-enable" hidden>Click to enable alarm sound on this screen</button>
+<script src="/js/alarm.js" defer></script>

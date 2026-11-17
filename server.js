@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const db = require('./db');
+const { CONTACTS } = require('./config/campus');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +39,7 @@ db.initialize().then(() => {
   app.use((req, res, next) => {
     res.locals.isStudentAuthed = Boolean(req.session.studentId);
     res.locals.isAdminAuthed = Boolean(req.session.adminId);
+    res.locals.contacts = CONTACTS;
     next();
   });
 

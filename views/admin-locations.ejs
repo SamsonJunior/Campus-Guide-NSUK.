@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Campus locations' }) %>
+<body class="console">
+  <%- include('partials/console-nav') %>
+  <div class="console__inner">
+    <h1>Monitored campus locations</h1>
+    <p style="color:var(--console-text-soft)">Each alert is matched to the closest point below, and that name is shown on the alarm and sent to security by SMS. Points marked <strong>approximate</strong> are placeholders. Stand at the real spot and press <em>Use my current location</em>, then save.</p>
+
+    <% if (saved) { %><p class="notice notice--ok">Location saved.</p><% } %>
+    <% if (error) { %><p class="notice notice--err"><%= error %></p><% } %>
+
+    <% locations.forEach(function(l) { %>
+      <div class="console-panel">
+        <h2><%= l.name %>
+          <% if (l.verified) { %><span class="badge badge--resolved">exact</span><% } else { %><span class="badge badge--pending">approximate</span><% } %>
+        </h2>
+        <form action="/admin/locations/<%= l.id %>" method="POST" class="loc-form">
+          <label>Latitude <input name="latitude" class="lat" type="text" inputmode="decimal" value="<%= l.latitude %>" required /></label>
+          <label>Longitude <input name="longitude" class="lng" type="text" inputmode="decimal" value="<%= l.longitude %>" required /></label>
+          <button type="button" class="btn btn-console btn-sm use-here">Use my current location</button>
+          <button type="submit" class="btn btn-console btn-sm">Save</button>
+          <a class="btn btn-console btn-sm" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=<%= l.latitude %>&mlon=<%= l.longitude %>#map=18/<%= l.latitude %>/<%= l.longitude %>">View on map</a>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+  <script>
+    document.querySelectorAll('.loc-form').forEach(function (form) {
+      form.querySelector('.use-here').addEventListener('click', function (e) {
+        var btn = e.target;
+        if (!navigator.geolocation) { alert('This device cannot share its location.'); return; }
+        btn.textContent = 'Locating…';
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          form.querySelector('.lat').value = pos.coords.latitude.toFixed(6);
+          form.querySelector('.lng').value = pos.coords.longitude.toFixed(6);
+          btn.textContent = 'Got it (±' + Math.round(pos.coords.accuracy) + 'm). Now press Save';
+        }, function () {
+          btn.textContent = 'Use my current location';
+          alert('Could not get your location. Allow location access and try again.');
+        }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+      });
+    });
+  </script>
+</body>
+</html>

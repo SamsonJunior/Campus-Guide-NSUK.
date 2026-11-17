@@ -41,6 +41,16 @@
         </div>
 
         <div class="console-panel">
+          <h2>Call security</h2>
+          <div class="status-form">
+            <% contacts.forEach(function(c) { %>
+              <a class="btn btn-console btn-sm" href="tel:<%= c.phone %>"><%= c.name %> &middot; <%= c.phone %></a>
+            <% }) %>
+            <a class="btn btn-console btn-sm" href="tel:<%= alert.phone %>">Call student &middot; <%= alert.phone %></a>
+          </div>
+        </div>
+
+        <div class="console-panel">
           <h2>Timeline</h2>
           <ul class="timeline">
             <% events.forEach(function(e) { %>
@@ -56,6 +66,7 @@
           <dl class="kv">
             <dt>Coordinates</dt><dd class="mono"><%= alert.latitude.toFixed(6) %>, <%= alert.longitude.toFixed(6) %></dd>
             <dt>Accuracy</dt><dd class="mono">&plusmn;<%= Math.round(alert.accuracy || 0) %> m</dd>
+            <dt>Nearest point</dt><dd><%= alert.nearest_location ? alert.nearest_location + ' (about ' + Math.round(alert.nearest_distance_m) + ' m away)' : 'Not determined' %></dd>
           </dl>
           <div class="map-embed">
             <iframe

@@ -69,3 +69,11 @@ campusguard/
 - A dedicated mobile app to use native GPS/push notifications.
 - Role-based admin accounts (security vs. health services vs. fire) with alert routing by category.
 - Geofencing so alerts route to the nearest security post automatically.
+
+## Security contacts, campus locations and the alarm
+
+- **Contacts** are listed in `config/campus.js` and shown (as tap-to-call links) on the landing, dashboard, alert and confirmation pages and on the security desk.
+- **Campus locations** (Senate Building, ICT Centre, Uni Port, Entrepreneurship Centre) live in the `campus_locations` table. The seeded coordinates are approximate placeholders: sign in as security, open **Locations**, stand at each spot and press *Use my current location*, then *Save*.
+- When a student sends an alert, the server finds the nearest campus point, stores it on the alert and shows it in the dashboard, the alarm banner and the SMS.
+- **Alarm:** every security desk page polls for pending alerts and shows a flashing banner with a siren until someone opens the alert and marks it acknowledged (or presses Silence). Click anywhere once on the page so the browser allows sound.
+- **SMS (optional):** set `TERMII_API_KEY` (and optionally `TERMII_SENDER_ID`) to text every contact on each alert. Without the key, only the dashboard alarm is used.

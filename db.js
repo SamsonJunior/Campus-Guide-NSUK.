@@ -1,9 +1,11 @@
+
 // Uses Turso (libSQL) — a cloud-hosted SQLite database — instead of a local
 // file. This is what makes student accounts and alerts survive server
 // restarts and redeploys: Render's free-tier disk is wiped on every restart,
 // but the Turso database lives outside that container entirely.
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@libsql/client');
+const { DEFAULT_LOCATIONS } = require('./config/campus');
 
 const url = (process.env.TURSO_DATABASE_URL || '').trim();
 const authToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
@@ -112,6 +114,14 @@ async function runSchemaAndSeed() {
       used INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS campus_locations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      verified INTEGER NOT NULL DEFAULT 0
+    );
+
     CREATE TABLE IF NOT EXISTS admin_password_resets (
       token TEXT PRIMARY KEY,
       admin_id INTEGER NOT NULL REFERENCES admins(id),
@@ -119,6 +129,28 @@ async function runSchemaAndSeed() {
       used INTEGER NOT NULL DEFAULT 0
     );
   `);
+
+  // Add the nearest-location columns to alerts tables created before this
+  // feature existed (CREATE TABLE IF NOT EXISTS won't alter an existing table).
+  const alertCols = (await api.prepare('PRAGMA table_info(alerts)').all()).map((c) => c.name);
+  if (!alertCols.includes('nearest_location')) {
+    await api.exec('ALTER TABLE alerts ADD COLUMN nearest_location TEXT');
+  }
+  if (!alertCols.includes('nearest_distance_m')) {
+    await api.exec('ALTER TABLE alerts ADD COLUMN nearest_distance_m REAL');
+  }
+
+  // Seed the monitored campus points once (approximate coordinates, unverified).
+  const locCount = (await api.prepare('SELECT COUNT(*) AS c FROM campus_locations').get()).c;
+  if (locCount === 0) {
+    for (const l of DEFAULT_LOCATIONS) {
+      await api.prepare('INSERT INTO campus_locations (name, latitude, longitude, verified) VALUES (?, ?, ?, 0)')
+        .run(l.name, l.latitude, l.longitude);
+    }
+  }
+
+  // Rename for databases seeded before the name was corrected.
+  await api.prepare("UPDATE campus_locations SET name = 'Uni Port' WHERE name = 'University Port'").run();
 
   const adminCount = (await api.prepare('SELECT COUNT(*) AS c FROM admins').get()).c;
   if (adminCount === 0) {

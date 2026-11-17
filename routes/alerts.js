@@ -1,6 +1,8 @@
 const express = require('express');
 const db = require('../db');
 const { requireStudent } = require('../middleware/auth');
+const { nearestLocation } = require('../lib/geo');
+const { notifyContacts } = require('../lib/notify');
 
 const router = express.Router();
 
@@ -62,7 +64,39 @@ router.post('/alert', requireStudent, async (req, res, next) => {
       'Alert created'
     );
 
-    res.redirect(`/alert/${info.lastInsertRowid}/confirmation`);
+    // Work out which monitored campus point is closest to the incident, then
+    // notify security. Failures here must never stop the alert being saved.
+    const alertId = info.lastInsertRowid;
+    const lat = latitude ? Number(latitude) : null;
+    const lng = longitude ? Number(longitude) : null;
+    let nearest = null;
+    try {
+      if (location_captured === '1' && Number.isFinite(lat) && Number.isFinite(lng)) {
+        const locations = await db.prepare('SELECT * FROM campus_locations').all();
+        nearest = nearestLocation(lat, lng, locations);
+        if (nearest) {
+          await db
+            .prepare('UPDATE alerts SET nearest_location = ?, nearest_distance_m = ? WHERE id = ?')
+            .run(nearest.name, nearest.distance, alertId);
+          await db.prepare(`INSERT INTO alert_events (alert_id, actor, action) VALUES (?, ?, ?)`).run(
+            alertId, 'system', `Nearest campus point: ${nearest.name} (about ${Math.round(nearest.distance)} m)`
+          );
+        }
+      }
+      const result = await notifyContacts(
+        { id: alertId, category: cat, latitude: lat, longitude: lng },
+        student,
+        nearest
+      );
+      const summary = result.configured
+        ? `SMS sent to ${result.sent} of ${result.sent + result.failed} security contacts`
+        : 'SMS not configured; security dashboard alarm only';
+      await db.prepare(`INSERT INTO alert_events (alert_id, actor, action) VALUES (?, ?, ?)`).run(alertId, 'system', summary);
+    } catch (notifyErr) {
+      console.error('Post-alert processing failed:', notifyErr);
+    }
+
+    res.redirect(`/alert/${alertId}/confirmation`);
   } catch (err) {
     next(err);
   }

@@ -246,4 +246,53 @@ router.post('/alerts/:id/delete', requireAdmin, async (req, res, next) => {
   }
 });
 
+// Polled by the security desk pages to ring the alarm for unhandled alerts.
+router.get('/api/pending', requireAdmin, async (req, res, next) => {
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT alerts.id, alerts.category, alerts.created_at, alerts.nearest_location,
+                alerts.nearest_distance_m, students.full_name
+         FROM alerts JOIN students ON students.id = alerts.student_id
+         WHERE alerts.status = 'pending'
+         ORDER BY alerts.id DESC LIMIT 20`
+      )
+      .all();
+    res.set('Cache-Control', 'no-store');
+    res.json({ pending: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/locations', requireAdmin, async (req, res, next) => {
+  try {
+    const locations = await db.prepare('SELECT * FROM campus_locations ORDER BY name').all();
+    res.render('admin-locations', { locations, saved: req.query.saved === '1', error: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/locations/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const lat = Number(req.body.latitude);
+    const lng = Number(req.body.longitude);
+    // Keffi sits near 8.85N 7.88E; reject typos that would put a point far off campus.
+    const plausible = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat - 8.85) < 0.1 && Math.abs(lng - 7.88) < 0.1;
+    if (!plausible) {
+      const locations = await db.prepare('SELECT * FROM campus_locations ORDER BY name').all();
+      return res.status(400).render('admin-locations', {
+        locations, saved: false,
+        error: 'Those coordinates are not near Keffi. Check the numbers (latitude about 8.85, longitude about 7.88).',
+      });
+    }
+    await db.prepare('UPDATE campus_locations SET latitude = ?, longitude = ?, verified = 1 WHERE id = ?')
+      .run(lat, lng, req.params.id);
+    res.redirect('/admin/locations?saved=1');
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

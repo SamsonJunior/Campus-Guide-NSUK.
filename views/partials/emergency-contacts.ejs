@@ -1,0 +1,9 @@
+<div class="emergency-contacts">
+  <h3>Emergency contacts</h3>
+  <p>Call security directly if you can:</p>
+  <ul>
+    <% contacts.forEach(function(c) { %>
+      <li><span><%= c.name %></span> <a class="mono" href="tel:<%= c.phone %>"><%= c.phone %></a></li>
+    <% }) %>
+  </ul>
+</div>
